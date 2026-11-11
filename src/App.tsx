@@ -4,6 +4,7 @@ import { parseHashUrl, navigateToCalculator } from './utils/urlState';
 import { CALCULATORS_META } from './data/calculatorsMeta';
 import { Navbar } from './components/Navbar';
 import { CalculatorPicker } from './components/CalculatorPicker';
+import { AllToolsModal } from './components/AllToolsModal';
 import { QuickSearchModal } from './components/QuickSearchModal';
 import { HomeScreen } from './components/HomeScreen';
 
@@ -16,6 +17,9 @@ import { SipCalculator } from './components/Calculators/SipCalculator';
 import { PpfCalculator } from './components/Calculators/PpfCalculator';
 import { CompoundInterestCalc } from './components/Calculators/CompoundInterestCalc';
 import { GstCalculator } from './components/Calculators/GstCalculator';
+import { BmiCalculator } from './components/Calculators/BmiCalculator';
+import { DateCalculator } from './components/Calculators/DateCalculator';
+import { ScientificCalculator } from './components/Calculators/ScientificCalculator';
 
 // Unit Converters
 import { UnitConverter } from './components/Converters/UnitConverter';
@@ -84,6 +88,12 @@ export function App() {
         return <CompoundInterestCalc currency={currency} initialParams={routeState.params} />;
       case 'gst':
         return <GstCalculator currency={currency} initialParams={routeState.params} />;
+      case 'bmi':
+        return <BmiCalculator initialParams={routeState.params} />;
+      case 'date-diff':
+        return <DateCalculator initialParams={routeState.params} />;
+      case 'scientific':
+        return <ScientificCalculator />;
 
       // Unit Converters
       case 'unit-converter':
@@ -129,15 +139,6 @@ export function App() {
 
       {/* Main Content Area */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
-        {/* Collapsible Calculator Picker / Quick Selector */}
-        {isPickerOpen && (
-          <div className="animate-fade-in mb-6">
-            <CalculatorPicker
-              currentId={routeState.calculatorId}
-              onSelect={handleSelectCalculator}
-            />
-          </div>
-        )}
 
         {/* Back to Home & Direct Breadcrumb Bar (when inside a calculator) */}
         {!isHome && (
@@ -203,6 +204,14 @@ export function App() {
           </section>
         )}
       </main>
+
+      {/* All Tools Popup Modal */}
+      <AllToolsModal
+        isOpen={isPickerOpen}
+        onClose={() => setIsPickerOpen(false)}
+        currentId={routeState.calculatorId}
+        onSelect={handleSelectCalculator}
+      />
 
       {/* Quick Search Modal */}
       <QuickSearchModal

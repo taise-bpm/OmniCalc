@@ -10,6 +10,7 @@ export type CalculatorId =
   | 'gst'
   | 'bmi'
   | 'date-diff'
+  | 'scientific'
   | 'unit-converter'
   | 'unit-area'
   | 'unit-length'

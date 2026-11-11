@@ -21,6 +21,18 @@
   }
 }
 
+@layer components {
+  .btn-sci {
+    @apply py-3 rounded-2xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold shadow-sm transition-all active:scale-95;
+  }
+  .btn-num {
+    @apply py-3.5 rounded-2xl bg-white hover:bg-slate-50 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-900 dark:text-white font-extrabold text-base border border-slate-200 dark:border-slate-700/80 shadow-sm transition-all active:scale-95;
+  }
+  .btn-op {
+    @apply py-3.5 rounded-2xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold transition-all active:scale-95;
+  }
+}
+
 @media print {
   header, footer, button, nav, .no-print {
     display: none !important;

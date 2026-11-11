@@ -26,6 +26,7 @@ export function parseHashUrl(): RouteState {
     'gst',
     'bmi',
     'date-diff',
+    'scientific',
     'unit-converter',
     'unit-area',
     'unit-length',
