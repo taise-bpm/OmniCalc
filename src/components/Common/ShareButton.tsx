@@ -18,7 +18,7 @@ export const ShareButton: React.FC<ShareButtonProps> = ({
 
   const handleShare = async () => {
     const relativeUrl = buildCalculatorUrl(calculatorId, params);
-    const fullUrl = `${window.location.origin}${window.location.pathname}${relativeUrl}`;
+    const fullUrl = `${window.location.origin}${relativeUrl}`;
 
     try {
       await navigator.clipboard.writeText(fullUrl);

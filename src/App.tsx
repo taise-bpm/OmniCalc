@@ -39,14 +39,18 @@ export function App() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isPickerOpen, setIsPickerOpen] = useState(false);
 
-  // Synchronize hash changes (back/forward buttons, direct url navigation)
+  // Synchronize route changes (back/forward buttons, direct url navigation, hash or clean path)
   useEffect(() => {
-    const handleHashChange = () => {
+    const handleRouteChange = () => {
       setRouteState(parseHashUrl());
     };
 
-    window.addEventListener('hashchange', handleHashChange);
-    return () => window.removeEventListener('hashchange', handleHashChange);
+    window.addEventListener('hashchange', handleRouteChange);
+    window.addEventListener('popstate', handleRouteChange);
+    return () => {
+      window.removeEventListener('hashchange', handleRouteChange);
+      window.removeEventListener('popstate', handleRouteChange);
+    };
   }, []);
 
   // Update HTML dark class
@@ -59,6 +63,53 @@ export function App() {
       localStorage.setItem('fincalc_dark', 'false');
     }
   }, [darkMode]);
+
+  const activeCalcMeta = CALCULATORS_META.find((c) => c.id === routeState.calculatorId);
+
+  // Dynamic SEO: Canonical Tag, Page Title, and Description
+  useEffect(() => {
+    const base = 'https://omnicalc.taise.in';
+    const isHome = routeState.calculatorId === 'home';
+    const canonicalHref = isHome ? `${base}/` : `${base}/${routeState.calculatorId}`;
+
+    // 1. Canonical tag
+    let linkCanonical = document.querySelector<HTMLLinkElement>('link[rel="canonical"]');
+    if (!linkCanonical) {
+      linkCanonical = document.createElement('link');
+      linkCanonical.setAttribute('rel', 'canonical');
+      document.head.appendChild(linkCanonical);
+    }
+    linkCanonical.setAttribute('href', canonicalHref);
+
+    // 2. OpenGraph URL
+    const ogUrl = document.querySelector<HTMLMetaElement>('meta[property="og:url"]');
+    if (ogUrl) {
+      ogUrl.setAttribute('content', canonicalHref);
+    }
+
+    // 3. Dynamic Title & Description
+    if (activeCalcMeta) {
+      document.title = `${activeCalcMeta.name} - Free Online Calculator | OmniCalc Suite`;
+      const descEl = document.querySelector<HTMLMetaElement>('meta[name="description"]');
+      if (descEl) {
+        descEl.setAttribute('content', `${activeCalcMeta.description} Free, instant, and mobile-friendly.`);
+      }
+      const ogTitle = document.querySelector<HTMLMetaElement>('meta[property="og:title"]');
+      if (ogTitle) {
+        ogTitle.setAttribute('content', `${activeCalcMeta.name} | OmniCalc Suite`);
+      }
+    } else {
+      document.title = 'OmniCalc Suite - Financial Calculators, Unit Converters & Math Tools';
+      const descEl = document.querySelector<HTMLMetaElement>('meta[name="description"]');
+      if (descEl) {
+        descEl.setAttribute('content', 'Free all-in-one suite for Loan EMI, FD, RD, SIP, GST, Compound Interest, and Unit Converters for Area, Length, Temperature, Volume, Mass, Data, Speed, and Time.');
+      }
+      const ogTitle = document.querySelector<HTMLMetaElement>('meta[property="og:title"]');
+      if (ogTitle) {
+        ogTitle.setAttribute('content', 'OmniCalc Suite - Financial Calculators & Unit Converters');
+      }
+    }
+  }, [routeState.calculatorId, activeCalcMeta]);
 
   const handleSelectCalculator = (id: CalculatorId) => {
     navigateToCalculator(id);
@@ -120,7 +171,6 @@ export function App() {
   };
 
   const isHome = routeState.calculatorId === 'home';
-  const activeCalcMeta = CALCULATORS_META.find((c) => c.id === routeState.calculatorId);
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors">

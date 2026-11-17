@@ -6,12 +6,22 @@ export interface RouteState {
 }
 
 export function parseHashUrl(): RouteState {
-  const hash = window.location.hash.replace(/^#\/?/, '');
-  if (!hash || hash === 'home') {
+  // 1. Check hash first: #/emi or #emi
+  let pathStr = window.location.hash.replace(/^#\/?/, '');
+
+  // 2. Fallback to pathname if hash is empty (for direct SEO links /emi, /fd, etc.)
+  if (!pathStr) {
+    const rawPath = window.location.pathname.replace(/^\/+/g, '').replace(/\/+$/g, '');
+    if (rawPath && rawPath !== 'index.html') {
+      pathStr = rawPath;
+    }
+  }
+
+  if (!pathStr || pathStr === 'home') {
     return { calculatorId: 'home', params: {} };
   }
 
-  const [path, queryString] = hash.split('?');
+  const [path, queryString] = pathStr.split('?');
   const cleanPath = path.toLowerCase().replace(/^\//, '');
 
   const validCalculators: CalculatorId[] = [
@@ -42,8 +52,9 @@ export function parseHashUrl(): RouteState {
   const calculatorId: CalculatorId = matchedId || 'home';
 
   const params: Record<string, string> = {};
-  if (queryString) {
-    const searchParams = new URLSearchParams(queryString);
+  const queryToParse = queryString || window.location.search.replace(/^\?/, '');
+  if (queryToParse) {
+    const searchParams = new URLSearchParams(queryToParse);
     searchParams.forEach((val, key) => {
       params[key] = val;
     });
@@ -56,7 +67,7 @@ export function buildCalculatorUrl(
   calculatorId: CalculatorId,
   params?: Record<string, string | number | boolean>
 ): string {
-  let url = `/#/${calculatorId}`;
+  const path = calculatorId === 'home' ? '/' : `/${calculatorId}`;
   if (params && Object.keys(params).length > 0) {
     const searchParams = new URLSearchParams();
     Object.entries(params).forEach(([key, val]) => {
@@ -66,10 +77,10 @@ export function buildCalculatorUrl(
     });
     const queryString = searchParams.toString();
     if (queryString) {
-      url += `?${queryString}`;
+      return `${path}?${queryString}`;
     }
   }
-  return url;
+  return path;
 }
 
 export function navigateToCalculator(
@@ -77,5 +88,10 @@ export function navigateToCalculator(
   params?: Record<string, string | number | boolean>
 ) {
   const newUrl = buildCalculatorUrl(calculatorId, params);
-  window.location.hash = newUrl.replace(/^\//, '');
+  if (typeof window !== 'undefined' && window.history && window.history.pushState) {
+    window.history.pushState(null, '', newUrl);
+    window.dispatchEvent(new Event('popstate'));
+  } else {
+    window.location.hash = `#${newUrl}`;
+  }
 }
